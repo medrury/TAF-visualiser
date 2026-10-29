@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1422">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TAF Visualiser">
+<title>TAF Visualiser</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#08111e;--panel:#111e2e;--panel2:#17273a;--line:#2b4058;--text:#eef5ff;--muted:#9eb0c6;--accent:#58c5e8;--green:#5dd6a0;--amber:#ffc66d;--red:#ff7d85;--purple:#c4a4ff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1727,#07101b 55%);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.wrap{max-width:1050px;margin:auto;padding:18px 14px 32px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#4cc5e7,#4d7cff);display:grid;place-items:center;color:#061421;font-size:23px;font-weight:900}.eyebrow{font-size:11px;letter-spacing:1.7px;color:var(--accent);font-weight:800}.title{font-size:24px;font-weight:800;letter-spacing:-.6px}.badge{font-size:11px;padding:5px 8px;border:1px solid #34506b;border-radius:99px;color:#a9c4dd;white-space:nowrap}
+.panel{background:rgba(17,30,46,.95);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 28px #0002}.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.sectionhead h2{font-size:15px;margin:0;font-weight:800}.hint{color:var(--muted);font-size:12px}
+textarea{width:100%;min-height:126px;resize:vertical;border:1px solid #31465f;border-radius:12px;background:#07111e;color:#e7f2ff;padding:13px;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;outline:none}textarea:focus,input:focus{border-color:var(--accent)}
+button{border:0;border-radius:11px;padding:11px 14px;background:#1c344c;color:var(--text);font-weight:750;font-size:13px;cursor:pointer}button.primary{background:var(--accent);color:#061421}button.ghost{background:transparent;border:1px solid #36506b}button:active{transform:scale(.98)}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.error{color:#ffb5b9;font-size:13px;margin-top:9px}.hidden{display:none!important}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric{background:#0b1726;border:1px solid #263b52;border-radius:12px;padding:11px}.metric .k{font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase}.metric .v{font-size:17px;font-weight:800;margin-top:3px;overflow-wrap:anywhere}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}.key{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}.swatch{width:10px;height:10px;border-radius:3px;background:var(--accent)}.swatch.tempo{background:var(--amber)}.swatch.inter{background:var(--purple)}.swatch.prob{background:var(--red)}.swatch.becmg{background:var(--green)}
+.timelinebox{overflow-x:auto;padding-bottom:5px}.timeline{min-width:700px}.timeaxis{display:grid;grid-template-columns:108px repeat(var(--hours),minmax(48px,1fr));gap:3px;align-items:stretch}.axislabel{font-size:11px;color:var(--muted);padding:7px 5px}.hourlabel{font-size:11px;text-align:center;color:#c5d5e8;background:#0b1726;border-radius:6px;padding:7px 2px;font-weight:700}.track{display:grid;grid-template-columns:108px 1fr;gap:3px;margin-top:5px;align-items:stretch}.trackname{display:flex;align-items:center;padding:8px 7px;font-size:11px;font-weight:800;color:#b7c9dc}.trackcells{display:grid;grid-template-columns:repeat(var(--hours),minmax(48px,1fr));gap:3px;position:relative}.cell{min-height:53px;background:#0b1726;border:1px solid #1d3147;border-radius:7px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:2px;font-size:10px;overflow:hidden}.cell strong{font-size:11px}.cell small{color:#c1d0e2;font-size:9px}.cell.base{background:#12324a;border-color:#235878}.cell.tempo{background:#49371e;border-color:#89642e}.cell.inter{background:#352a4d;border-color:#6d5399}.cell.prob{background:#49252b;border-color:#8b404a}.cell.becmg{background:#163c35;border-color:#347f69}.cell.empty{opacity:.35}.cell.selected{outline:2px solid #fff;outline-offset:-2px}.cell.arrival{box-shadow:inset 0 0 0 2px var(--accent)}.arrivalmark{color:var(--accent);font-size:9px;font-weight:900}
+.group-list{display:grid;gap:8px}.group{border:1px solid #293e55;background:#0b1726;border-radius:12px;padding:12px}.ghead{display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{font-size:10px;font-weight:900;letter-spacing:.7px;padding:4px 7px;border-radius:6px;background:#23445b;color:#b9ecff}.pill.tempo{background:#604820;color:#ffe0a6}.pill.inter{background:#483963;color:#e1d2ff}.pill.prob{background:#632f37;color:#ffc2c6}.pill.becmg{background:#1f5749;color:#b6f4df}.gtime{font-size:12px;font-weight:750}.gtext{font-size:13px;color:#d7e4f3;margin-top:7px;overflow-wrap:anywhere}.raw{color:#92a7be;font:11px/1.5 ui-monospace,monospace;margin-top:6px;overflow-wrap:anywhere}
+.detailgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.detail{background:#0b1726;border:1px solid #24384e;border-radius:10px;padding:10px}.detail .label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}.detail .value{font-weight:750;margin-top:4px;font-size:13px;overflow-wrap:anywhere}
+.foot{font-size:11px;color:#91a5bb;line-height:1.5;padding:8px 3px}.notice{border-left:3px solid var(--amber);padding:10px 12px;background:#2a2419;border-radius:8px;color:#f8dfb3;font-size:12px;margin-top:12px}
+@media(min-width:700px){.wrap{padding:24px}.panel{padding:20px}.detailgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:450px){.title{font-size:21px}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:13px}.badge{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div class="brand"><div class="logo">✈</div><div><div class="eyebrow">AVIATION WEATHER</div><div class="title">TAF Visualiser</div></div></div><div class="badge">OFFLINE-READY · BETA</div></header>
+<section class="panel">
+ <div class="sectionhead"><h2>01 / Enter forecast</h2><span class="hint">Paste a complete TAF</span></div>
+ <textarea id="taf" spellcheck="false" aria-label="TAF text" placeholder="Example: TAF YBBN 290505Z 2906/3012 07014KT 9999 FEW030 FM290900 09008KT CAVOK TEMPO 2918/2920 4000 SHRA BKN015"></textarea>
+ <div class="sectionhead" style="margin-top:12px"><h2>Destination arrival</h2><span class="hint">Optional but recommended</span></div>
+ <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+  <label class="hint">Arrival date (UTC)<input id="arrivalDate" type="date" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #31465f;border-radius:10px;background:#07111e;color:#eef5ff;font:14px inherit"></label>
+  <label class="hint">Arrival time (UTC)<input id="arrivalTime" type="time" style="display:block;width:100%;margin-top:5px;padding:11px;border:1px solid #31465f;border-radius:10px;background:#07111e;color:#eef5ff;font:14px inherit"></label>
+ </div>
+ <div class="hint" style="margin-top:7px">Enter your estimated arrival at the destination in UTC (Zulu). The app will highlight the arrival hour and show the prevailing forecast and any overlapping TEMPO / INTER / PROB groups.</div>
+ <div class="actions"><button class="primary" id="parse">Visualise TAF</button><button id="sample">Load sample</button><button class="ghost" id="clear">Clear</button></div>
+ <div id="error" class="error hidden"></div>
+</section>
+<div id="results" class="hidden">
+ <section class="panel">
+  <div class="sectionhead"><h2>02 / Forecast overview</h2><span id="issued" class="hint"></span></div>
+  <div class="summary" id="summary"></div>
+  <div class="legend">
+   <span class="key"><i class="swatch"></i> Prevailing</span><span class="key"><i class="swatch becmg"></i> BECMG / FM</span><span class="key"><i class="swatch tempo"></i> TEMPO</span><span class="key"><i class="swatch inter"></i> INTER</span><span class="key"><i class="swatch prob"></i> PROB group</span>
+  </div>
+  <p class="hint">Times are UTC (Z). Select an hour to inspect the forecast context. Hour cells show a compact summary; full coded conditions remain available below.</p>
+ </section>
+ <section class="panel" id="arrivalBriefingPanel">
+  <div class="sectionhead"><h2>03 / Arrival weather briefing</h2><span id="briefingEta" class="hint">Set arrival time to generate</span></div>
+  <div id="arrivalBriefing"><p class="hint">Enter your estimated destination arrival in UTC to build a concise summary of the prevailing forecast and any overlapping TEMPO, INTER or PROB groups.</p></div>
+ </section>
+ <section class="panel">
+  <div class="sectionhead"><h2>04 / Hourly timeline</h2><span class="hint">Swipe horizontally</span></div>
+  <div class="timelinebox"><div id="timeline" class="timeline"></div></div>
+ </section>
+ <section class="panel">
+  <div class="sectionhead"><h2>05 / Selected hour</h2><span id="selectedTime" class="hint"></span></div>
+  <div id="details" class="detailgrid"></div>
+ </section>
+ <section class="panel">
+  <div class="sectionhead"><h2>06 / Forecast groups</h2><span class="hint">Original sequence</span></div>
+  <div id="groups" class="group-list"></div>
+ </section>
+ <div class="notice">Decision-support display only. Always verify the original, current TAF and apply the applicable AIP, operations manual and company procedures. This prototype does not replace an approved aviation weather briefing or operational interpretation.</div>
+</div>
+<div class="foot">TAF Visualiser • Local processing only: pasted forecast text stays in this browser. The parser is a prototype and may not correctly interpret every national TAF format or unusual group ordering.</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const sample="TAF YBBN 290505Z 2906/3012 07014KT 9999 FEW030 FM290900 09008KT CAVOK FM291500 21006KT 9999 FEW030 TEMPO 2918/2920 4000 SHRA BKN015 INTER 3003/3006 5000 SHRA SCT015";
+let current=null, selectedHour=0;
+const monthNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function parseDayHour(s, anchor){
+  if(!/^\d{4}$/.test(s)) return null;
+  let day=+s.slice(0,2), hour=+s.slice(2,4);
+  if(day<1||day>31||hour>23)return null;
+  let base=new Date(Date.UTC(anchor.getUTCFullYear(),anchor.getUTCMonth(),day,hour));
+  // choose the closest plausible month around issue/validity anchor
+  let candidates=[base,new Date(Date.UTC(anchor.getUTCFullYear(),anchor.getUTCMonth()-1,day,hour)),new Date(Date.UTC(anchor.getUTCFullYear(),anchor.getUTCMonth()+1,day,hour))];
+  candidates.sort((a,b)=>Math.abs(a-anchor)-Math.abs(b-anchor));
+  return candidates[0];
+}
+function parseStamp(stamp, anchor){
+  let m=stamp.match(/^(\d{2})(\d{2})(\d{2})?$/); if(!m)return null;
+  return parseDayHour(m[1]+m[2],anchor);
+}
+function fmt(d, opts={}){return new Intl.DateTimeFormat("en-GB",{timeZone:"UTC",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",hour12:false,...opts}).format(d).replace(",","");}
+function hh(d){return new Intl.DateTimeFormat("en-GB",{timeZone:"UTC",hour:"2-digit",hour12:false}).format(d)}
+function parseTAF(raw){
+ let clean=raw.toUpperCase().replace(/[\r\n]+/g," ").replace(/\s+/g," ").trim();
+ if(!clean)throw Error("Paste a TAF first.");
+ const tokens=clean.split(" ");
+ let airport=tokens.find(t=>/^[A-Z]{4}$/.test(t))||"Unknown aerodrome";
+ let issueToken=tokens.find(t=>/^\d{6}Z$/.test(t));
+ let now=new Date(), anchor=now;
+ if(issueToken){let z=issueToken.slice(0,6);anchor=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),+z.slice(0,2),+z.slice(2,4),+z.slice(4,6)));let ds=[anchor,new Date(Date.UTC(anchor.getUTCFullYear(),anchor.getUTCMonth()-1,+z.slice(0,2),+z.slice(2,4),+z.slice(4,6))),new Date(Date.UTC(anchor.getUTCFullYear(),anchor.getUTCMonth()+1,+z.slice(0,2),+z.slice(2,4),+z.slice(4,6)))];ds.sort((a,b)=>Math.abs(a-now)-Math.abs(b-now));anchor=ds[0];}
+ let validToken=tokens.find(t=>/^\d{4}\/\d{4}$/.test(t));
+ if(!validToken)throw Error("Could not find the TAF validity period (for example 2906/3012). Check that the complete TAF is pasted.");
+ let [a,b]=validToken.split("/"); let start=parseDayHour(a,anchor), end=parseDayHour(b,start);
+ if(!start||!end)throw Error("Could not interpret the validity period.");
+ if(end<=start)end=new Date(Date.UTC(end.getUTCFullYear(),end.getUTCMonth()+1,end.getUTCDate(),end.getUTCHours()));
+ const markers=/^(FM\d{6}|BECMG|TEMPO|INTER|PROB\d{2}|PROB\d{2}TEMPO|PROB\d{2}INTER|AMD|COR|CNL|NIL|RMK|TX\d+\/\d{4}Z|TN\d+\/\d{4}Z)$/;
+ // Group tokens around change indicators; retain pre-change prevailing conditions.
+ let groups=[], currentTokens=[], mode="BASE", periodStart=start, periodEnd=end, prob=null;
+ let headerDone=false;
+ function pushCurrent(){if(currentTokens.length){groups.push({type:mode,start:periodStart,end:periodEnd,prob,raw:currentTokens.join(" ")});currentTokens=[];}}
+ let i=0;
+ // skip initial TAF header, airport, issue time and validity token
+ while(i<tokens.length && tokens[i]!==validToken){i++} i++;
+ for(;i<tokens.length;i++){
+   let tok=tokens[i];
+   if(tok==="RMK")break;
+   let isFM=/^FM\d{6}$/.test(tok), isBEC=tok==="BECMG", isTemp=tok==="TEMPO", isInter=tok==="INTER", isProb=/^PROB\d{2}$/.test(tok);
+   if(isFM||isBEC||isTemp||isInter||isProb||tok==="PROB30TEMPO"||tok==="PROB40TEMPO"||tok==="PROB30INTER"||tok==="PROB40INTER"){
+     pushCurrent();
+     prob=null;
+     if(isFM){mode="FM";let dt=tok.slice(2);periodStart=parseStamp(dt,anchor)||start;periodEnd=end;}
+     else if(isBEC){mode="BECMG";let per=tokens[i+1];if(per&&/^\d{4}\/\d{4}$/.test(per)){i++;let [x,y]=per.split("/");periodStart=parseDayHour(x,anchor)||start;periodEnd=parseDayHour(y,periodStart)||end;}else{periodStart=start;periodEnd=end;}}
+     else if(isTemp||isInter){mode=isTemp?"TEMPO":"INTER";let per=tokens[i+1];if(per&&/^\d{4}\/\d{4}$/.test(per)){i++;let [x,y]=per.split("/");periodStart=parseDayHour(x,anchor)||start;periodEnd=parseDayHour(y,periodStart)||end;}else{periodStart=start;periodEnd=end;}}
+     else {mode=tok.includes("TEMPO")?"PROB TEMPO":tok.includes("INTER")?"PROB INTER":"PROB";prob=tok.match(/\d{2}/)?.[0]||"";let next=tokens[i+1];if(next&&/^\d{4}\/\d{4}$/.test(next)){i++;let [x,y]=next.split("/");periodStart=parseDayHour(x,anchor)||start;periodEnd=parseDayHour(y,periodStart)||end;}else{periodStart=start;periodEnd=end;}}
+     continue;
+   }
+   if(["AMD","COR","TAF","TAF3"].includes(tok))continue;
+   currentTokens.push(tok);
+ }
+ pushCurrent();
+ if(!groups.length)throw Error("No forecast conditions were found. Check the TAF format.");
+ // Ensure group date periods align near validity; adjust day rollover relative to start.
+ groups=groups.map(g=>({...g,start:g.start<new Date(start.getTime()-24*3600000)?new Date(g.start.getTime()+24*3600000):g.start,end:g.end<=g.start?new Date(g.end.getTime()+24*3600000):g.end}));
+ return {clean,airport,issue:issueToken||"Not shown",start,end,groups};
+}
+function conditionSummary(raw){
+ let s=raw||"Conditions not decoded";
+ let wind=(s.match(/(?:VRB|\d{3})\d{2,3}(?:G\d{2,3})?KT/)||[])[0];
+ let vis=(s.match(/\b(?:CAVOK|9999|\d{4})\b/)||[])[0];
+ let cloud=(s.match(/\b(?:FEW|SCT|BKN|OVC|VV)\d{3}(?:CB|TCU)?\b/g)||[]).join(" ");
+ let wx=(s.match(/\b(?:\+|-)?(?:TS|SH|FZ|BL|DR|MI|BC|PR)?(?:RA|DZ|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|SQ|FC|DS|SS)(?:RA|SN|DZ)?\b/g)||[]).join(" ");
+ if(/CAVOK/.test(s))return {wind:wind||"Not stated",visibility:"CAVOK",weather:"No significant weather implied by CAVOK",cloud:"No significant cloud implied by CAVOK"};
+ return {wind:wind||"Not stated",visibility:vis||"Not stated",weather:wx||(/NSW/.test(s)?"NSW — nil significant weather": "Not stated"),cloud:cloud||(/NSC/.test(s)?"NSC":/NCD/.test(s)?"NCD":"Not stated")};
+}
+function groupType(g){return g.type==="BASE"?"Prevailing":g.type==="FM"?"FM — from":g.type==="BECMG"?"BECMG":g.type}
+function groupClass(g){return g.type==="TEMPO"?"tempo":g.type==="INTER"||g.type==="PROB INTER"?"inter":g.type.startsWith("PROB")?"prob":g.type==="BECMG"||g.type==="FM"?"becmg":"base"}
+function active(g,t){return t>=g.start&&t<g.end}
+function render(){
+ const d=current; $("results").classList.remove("hidden");$("error").classList.add("hidden");
+ $("issued").textContent="Issued "+d.issue;
+ $("summary").innerHTML=[
+ ["Aerodrome",d.airport],["Valid from",fmt(d.start)],["Valid until",fmt(d.end)],["Arrival (UTC)",d.arrival?fmt(d.arrival):"Not set"]
+ ].map(x=>`<div class="metric"><div class="k">${x[0]}</div><div class="v">${x[1]}</div></div>`).join("");
+ let hours=[];for(let t=new Date(d.start);t<d.end;t=new Date(t.getTime()+3600000))hours.push(new Date(t));
+ selectedHour=Math.min(selectedHour,Math.max(0,hours.length-1));
+ let timeline=$("timeline");timeline.style.setProperty("--hours",hours.length);
+ timeline.innerHTML=`<div class="timeaxis"><div class="axislabel">UTC / GROUP</div>${hours.map((h,i)=>`<div class="hourlabel">${fmt(h,{day:"2-digit",month:"short"})}<br>${hh(h)}Z</div>`).join("")}</div>`+
+ d.groups.map((g,gi)=>`<div class="track"><div class="trackname">${groupType(g)}</div><div class="trackcells">${hours.map((h,i)=>{let on=active(g,h);let c=conditionSummary(g.raw);const arrivalHere=d.arrival&&d.arrival>=h&&d.arrival<new Date(h.getTime()+3600000);return `<div class="cell ${on?groupClass(g):"empty"} ${i===selectedHour?"selected":""} ${arrivalHere?"arrival":""}" data-hour="${i}" title="${g.raw.replace(/"/g,"&quot;")}">${arrivalHere?'<span class="arrivalmark">ARRIVAL</span>':""}${on?`<strong>${c.visibility}</strong><small>${c.wind}</small><small>${c.weather!=="Not stated"?c.weather:c.cloud}</small>`:"—"}</div>`}).join("")}</div></div>`).join("");
+ timeline.querySelectorAll("[data-hour]").forEach(el=>el.addEventListener("click",()=>{selectedHour=+el.dataset.hour;renderTimelineOnly(hours)}));
+ $("groups").innerHTML=d.groups.map(g=>`<div class="group"><div class="ghead"><span class="pill ${groupClass(g)}">${groupType(g)}${g.prob?" "+g.prob+"%":""}</span><span class="gtime">${fmt(g.start)} – ${fmt(g.end)}</span></div><div class="gtext">${conditionSummary(g.raw).wind} · Vis ${conditionSummary(g.raw).visibility} · ${conditionSummary(g.raw).weather} · ${conditionSummary(g.raw).cloud}</div><div class="raw">${g.raw||"(no conditions decoded)"}</div></div>`).join("");
+ renderDetails(hours);
+ renderArrivalBriefing();
+}
+function renderTimelineOnly(hours){render(); }
+function renderDetails(hours){
+ let d=current, t=new Date(d.start.getTime()+selectedHour*3600000);$("selectedTime").textContent=fmt(t)+" UTC";
+ let base=d.groups.filter(g=>(g.type==="BASE"||g.type==="FM"||g.type==="BECMG")&&g.start<=t).sort((a,b)=>b.start-a.start)[0]||d.groups.find(g=>g.type==="BASE")||d.groups[0];
+ let overlays=d.groups.filter(g=>["TEMPO","INTER","PROB","PROB TEMPO","PROB INTER"].includes(g.type)&&active(g,t));
+ let c=conditionSummary(base.raw);
+ let items=[];
+ if(d.arrival){items.push(["Estimated arrival",fmt(d.arrival)+" UTC"],["Arrival timing",d.arrival<d.start?"Before TAF validity":d.arrival>=d.end?"After TAF validity":"Within TAF validity"])}
+ items.push(["Prevailing group",groupType(base)],["Wind",c.wind],["Visibility",c.visibility],["Weather",c.weather],["Cloud",c.cloud],["Applicable variations",overlays.length?overlays.map(groupType).join(", "):"No TEMPO / INTER / PROB group parsed for this hour"],["Prevailing coded conditions",base.raw||"Not stated"]);
+ if(overlays.length)items.push(...overlays.map(g=>[`${groupType(g)} conditions`,g.raw||"Not stated"]));
+ $("details").innerHTML=items.map(x=>`<div class="detail"><div class="label">${x[0]}</div><div class="value">${x[1]}</div></div>`).join("");
+ if(d.arrival&&(d.arrival<d.start||d.arrival>=d.end))$("details").insertAdjacentHTML("beforeend",`<div class="detail" style="border-color:var(--amber)"><div class="label">Arrival warning</div><div class="value">Arrival time is outside this TAF validity period. Obtain a forecast covering your ETA.</div></div>`);
+}
+function renderArrivalBriefing(){
+ const d=current, box=$("arrivalBriefing"), etaLabel=$("briefingEta");
+ if(!d.arrival){etaLabel.textContent="No arrival time set";box.innerHTML='<p class="hint">Enter both an arrival date and time in UTC above, then select Visualise TAF. Without an ETA, this briefing cannot assess conditions at arrival.</p>';return;}
+ etaLabel.textContent="ETA "+fmt(d.arrival)+" UTC";
+ if(d.arrival<d.start||d.arrival>=d.end){box.innerHTML=`<div class="notice" style="margin-top:0">ETA is outside this TAF validity period (${fmt(d.start)} to ${fmt(d.end)} UTC). This TAF does not provide valid coverage for the entered arrival time. Obtain a current forecast covering ETA.</div>`;return;}
+ const base=d.groups.filter(g=>(g.type==="BASE"||g.type==="FM"||g.type==="BECMG")&&g.start<=d.arrival).sort((a,b)=>b.start-a.start)[0]||d.groups.find(g=>g.type==="BASE")||d.groups[0];
+ const c=conditionSummary(base.raw);
+ const overlays=d.groups.filter(g=>["TEMPO","INTER","PROB","PROB TEMPO","PROB INTER"].includes(g.type)&&active(g,d.arrival));
+ const tile=(label,value)=>`<div class="detail"><div class="label">${label}</div><div class="value">${value}</div></div>`;
+ let html=`<div class="summary" style="grid-template-columns:repeat(2,minmax(0,1fr))">${tile("Coverage","ETA is within TAF validity")}${tile("Prevailing group",groupType(base))}${tile("Wind",c.wind)}${tile("Visibility",c.visibility)}${tile("Weather",c.weather)}${tile("Cloud",c.cloud)}</div><div style="margin-top:12px"><strong>Conditions at ETA</strong><p class="gtext">Prevailing coded conditions: <span class="raw">${base.raw||"Not stated"}</span></p></div>`;
+ if(overlays.length){
+   html+=`<div style="margin-top:12px"><strong>Groups overlapping ETA</strong><div class="group-list" style="margin-top:8px">${overlays.map(g=>`<div class="group"><div class="ghead"><span class="pill ${groupClass(g)}">${groupType(g)}${g.prob?" "+g.prob+"%":""}</span><span class="gtime">${fmt(g.start)} – ${fmt(g.end)} UTC</span></div><div class="gtext">${conditionSummary(g.raw).wind} · Vis ${conditionSummary(g.raw).visibility} · ${conditionSummary(g.raw).weather} · ${conditionSummary(g.raw).cloud}</div><div class="raw">${g.raw||"Not stated"}</div></div>`).join("")}</div><p class="hint">These are overlapping variation groups, not a certainty that the stated conditions will occur at the exact arrival time. Interpret TEMPO, INTER and PROB wording using approved briefing procedures.</p></div>`;
+ } else html+='<p class="hint" style="margin-top:12px">No TEMPO, INTER or PROB group parsed as overlapping the exact ETA. Check the original TAF carefully; this prototype may not recognise every format.</p>';
+ box.innerHTML=html;
+}
+$("parse").addEventListener("click",()=>{try{current=parseTAF($("taf").value);const ad=$("arrivalDate").value, at=$("arrivalTime").value;current.arrival=(ad&&at)?new Date(ad+"T"+at+":00Z"):null;selectedHour=current.arrival?Math.max(0,Math.floor((current.arrival-current.start)/3600000)):0;render()}catch(e){$("error").textContent=e.message;$("error").classList.remove("hidden");$("results").classList.add("hidden")}});
+$("sample").addEventListener("click",()=>{$("taf").value=sample;});
+$("clear").addEventListener("click",()=>{$("taf").value="";$("arrivalDate").value="";$("arrivalTime").value="";$("results").classList.add("hidden");$("error").classList.add("hidden");current=null;});
+if("serviceWorker" in navigator && location.protocol!=="file:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}
+</script>
+</body>
+</html>
